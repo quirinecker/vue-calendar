@@ -1,14 +1,18 @@
 <script setup lang="ts">
 import { computed, ref, useTemplateRef } from 'vue';
 import CalendarSeperator from './CalendarSeperator.vue';
-import type { Seperator, Timespan } from '../lib';
+import type { AnonymousEvent, Seperator, Timespan } from '../lib';
+import type { Moment } from 'moment';
+import CalendarEvent from './CalendarEvent.vue';
 
-defineProps<{
+const props = defineProps<{
 	seperators: Seperator[],
+	day: Moment
+	events: AnonymousEvent[]
 }>()
 
 const emit = defineEmits<{
-	(e: 'quick-create', event: Timespan): void,
+	(e: 'quick-create', day: Moment, event: Timespan): void,
 }>()
 
 const isDragging = ref(false)
@@ -27,7 +31,7 @@ const top = computed(() => {
 function dragStart(e: MouseEvent) {
 	console.log(e.target)
 	height.value = 0
-	startY.value = e.clientY
+	startY.value = offset(e.clientY)
 	isDragging.value = true
 }
 
@@ -36,7 +40,11 @@ function dragging(e: MouseEvent) {
 		return
 	}
 
-	height.value = e.clientY - startY.value
+	height.value = offset(e.clientY) - startY.value
+}
+
+function offset(n: number) {
+	return n - (column.value?.getBoundingClientRect().top ?? 0)
 }
 
 function dragStop(_: MouseEvent) {
@@ -49,21 +57,26 @@ function dragStop(_: MouseEvent) {
 
 	const timeFrom = startY.value / column.value.offsetHeight
 	const timeTo = (startY.value + height.value) / column.value.offsetHeight
-	emit('quick-create', {
+	emit('quick-create', props.day, {
 		from: timeFrom,
 		to: timeTo
 	})
+
+	height.value = 0
+	startY.value = 0
 }
 </script>
 
 <template>
 	<div ref="column" @mousedown="dragStart" @mouseup="dragStop" @mousemove="dragging"
-		class="bg-gray-600 text-white relative h-screen w-32 flex flex-col justify-evenly">
+		class="bg-gray-600 text-white relative h-full flex flex-col flex-1 justify-evenly">
 		<CalendarSeperator v-for="sep in seperators" :seperator="sep">
 			<hr class="w-full">
 		</CalendarSeperator>
 		<div class="absolute w-full h-32 top-20 bg-black opacity-45"
 			:style="{ height: `${Math.abs(height)}px`, top: `${top}px` }">{{ startY }}, {{ height }}</div>
+
+		<CalendarEvent v-for="event in events" :event="event" />
 	</div>
 </template>
 
