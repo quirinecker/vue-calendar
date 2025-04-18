@@ -4,6 +4,7 @@ import CalendarSeperator from './CalendarSeperator.vue';
 import type { AnonymousEvent, Seperator, Timespan } from '../lib';
 import type { Moment } from 'moment';
 import CalendarEvent from './CalendarEvent.vue';
+import moment from 'moment';
 
 const props = defineProps<{
 	seperators: Seperator[],
@@ -57,7 +58,7 @@ function dragStop(_: MouseEvent) {
 
 	const timeFrom = startY.value / column.value.offsetHeight
 	const timeTo = (startY.value + height.value) / column.value.offsetHeight
-	emit('quick-create', props.day, {
+	emit('quick-create', moment(props.day), {
 		from: timeFrom,
 		to: timeTo
 	})
@@ -68,15 +69,21 @@ function dragStop(_: MouseEvent) {
 </script>
 
 <template>
-	<div ref="column" @mousedown="dragStart" @mouseup="dragStop" @mousemove="dragging"
-		class="bg-gray-600 text-white relative h-full flex flex-col flex-1 justify-evenly">
-		<CalendarSeperator v-for="sep in seperators" :seperator="sep">
-			<hr class="w-full">
-		</CalendarSeperator>
-		<div class="absolute w-full h-32 top-20 bg-black opacity-45"
-			:style="{ height: `${Math.abs(height)}px`, top: `${top}px` }">{{ startY }}, {{ height }}</div>
+	<div class="flex flex-col h-full grow">
+		<div class="flex justify-center items-center bg-gray-600 h-12 text-white border-b-2 border-white">
+			{{ props.day.format('dddd') }}
+		</div>
 
-		<CalendarEvent v-for="event in events" :event="event" />
+		<div ref="column" @mousedown="dragStart" @mouseup="dragStop" @mousemove="dragging"
+			class="bg-gray-600 text-white relative flex flex-col grow justify-evenly">
+			<CalendarSeperator v-for="sep in seperators" :seperator="sep">
+				<hr class="w-full">
+			</CalendarSeperator>
+			<div class="absolute w-full top-20 bg-black opacity-45"
+				:style="{ height: `${Math.abs(height)}px`, top: `${top}px` }">{{ startY }}, {{ height }}</div>
+
+			<CalendarEvent v-for="event in events" :event="event" />
+		</div>
 	</div>
 </template>
 

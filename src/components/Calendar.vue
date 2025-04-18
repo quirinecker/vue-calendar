@@ -5,8 +5,8 @@ import CalendarHeader from './CalendarHeader.vue';
 import CalendarCollumn from './CalendarCollumn.vue';
 import moment, { type Moment } from 'moment';
 
-const events = defineModel<AnonymousEvent[]>('events', {required: true})
-const dateString = ref("")
+const events = defineModel<AnonymousEvent[]>('events', { required: true })
+const dateString = ref()
 const date = computed(() => moment(dateString.value))
 
 type Day = {
@@ -19,7 +19,7 @@ const week = computed(() => {
 })
 
 const days = computed<Day[]>(() => {
-	return [...Array(7).keys()].map((i) => ({
+	return [1,2,3,4,5,6,0].map((i) => ({
 		date: moment(week.value.day(i)),
 		events: events.value.filter(
 			(event) => event.from >= week.value.day(i).startOf('day') && event.to <= week.value.day(i).endOf('day')
@@ -49,10 +49,12 @@ const seperators = ref<Seperator[]>([
 function quickCreate(date: Moment, timespan: Timespan) {
 	console.log(`Event from ${timespan.from * 24 * 3600 * 1000} to ${timespan.to * 24 * 3600 * 1000} `)
 	const newEvent: AnonymousEvent = {
-		from: moment(date).minutes(timespan.from * 24 * 60),
-		to: moment(date).minutes(timespan.to * 24 * 60)
+		from: moment(date).startOf('day').minutes(timespan.from * 24 * 60),
+		to: moment(date).startOf('day').minutes(timespan.to * 24 * 60)
 	}
 	emits('quick-create', newEvent)
+	console.log(moment(date).format("dddd"))
+	console.log(newEvent.from.format("dddd"))
 	events.value.push(newEvent)
 }
 
@@ -64,13 +66,8 @@ function quickCreate(date: Moment, timespan: Timespan) {
 		<div class="calendar flex flex-row w-full flex-1 items-stretch">
 			<CalendarHeader :seperators="seperators" />
 
-			<CalendarCollumn
-				v-for="day in days"
-				:seperators="seperators"
-				:day="day.date"
-				:events="day.events"
-				@quick-create="quickCreate"
-			/>
+			<CalendarCollumn v-for="day in days" :seperators="seperators" :day="day.date" :events="day.events"
+				@quick-create="quickCreate" />
 
 		</div>
 
