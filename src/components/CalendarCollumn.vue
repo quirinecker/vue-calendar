@@ -75,12 +75,12 @@ function dragStop(_: MouseEvent) {
 		</div>
 
 		<div ref="column" @mousedown="dragStart" @mouseup="dragStop" @mousemove="dragging"
-			class="bg-gray-600 text-white relative flex flex-col grow justify-evenly">
+			class="bg-gray-600 text-white relative flex flex-col grow items-center">
 			<CalendarSeperator v-for="sep in seperators" :seperator="sep">
 				<hr class="w-full">
 			</CalendarSeperator>
-			<div class="absolute w-full top-20 bg-black opacity-45"
-				:style="{ height: `${Math.abs(height)}px`, top: `${top}px` }">{{ startY }}, {{ height }}</div>
+			<div class="absolute w-11/12 top-20 bg-black opacity-45 rounded-lg"
+				:style="{ height: `${Math.abs(height)}px`, top: `${top}px` }"></div>
 
 			<CalendarEvent v-for="event in events" :event="event" />
 		</div>

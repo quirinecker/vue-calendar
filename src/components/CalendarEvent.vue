@@ -24,6 +24,6 @@ const dimensions = computed(() => {
 </script>
 
 <template>
-	<div class="absolute w-full h-0 top-20 bg-black opacity-45"
+	<div class="absolute w-11/12 rounded-lg h-0 top-20 bg-black opacity-45"
 		:style="{ top: `${dimensions.top}%`, height: `${dimensions.height}%` }"></div>
 </template>
