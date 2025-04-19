@@ -70,8 +70,9 @@ function dragStop(_: MouseEvent) {
 
 <template>
 	<div class="flex flex-col h-full grow">
-		<div class="flex justify-center items-center bg-gray-600 h-12 text-white border-b-2 border-white">
-			{{ props.day.format('dddd') }}
+		<div class="flex justify-center items-center flex-col bg-gray-600 h-18 text-white border-b-2 border-white">
+			<div>{{ props.day.format('dd').toUpperCase() }}</div>
+			<div>{{ props.day.date() }}</div>
 		</div>
 
 		<div ref="column" @mousedown="dragStart" @mouseup="dragStop" @mousemove="dragging"

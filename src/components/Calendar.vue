@@ -6,7 +6,7 @@ import CalendarCollumn from './CalendarCollumn.vue';
 import moment, { type Moment } from 'moment';
 
 const events = defineModel<AnonymousEvent[]>('events', { required: true })
-const dateString = ref()
+const dateString = ref(moment().format("YYYY-MM-DD"))
 const date = computed(() => moment(dateString.value))
 
 type Day = {
@@ -19,7 +19,7 @@ const week = computed(() => {
 })
 
 const days = computed<Day[]>(() => {
-	return [1,2,3,4,5,6,0].map((i) => ({
+	return [1, 2, 3, 4, 5, 6, 0].map((i) => ({
 		date: moment(week.value.day(i)),
 		events: events.value.filter(
 			(event) => event.from >= week.value.day(i).startOf('day') && event.to <= week.value.day(i).endOf('day')
