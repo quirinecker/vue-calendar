@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import type { AnonymousEvent } from './lib';
+import type { Event } from './lib';
 import Calendar from './components/Calendar.vue';
 
-const events = ref<AnonymousEvent[]>([])
+const events = ref<Event[]>([])
 </script>
 
 <template>

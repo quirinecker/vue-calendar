@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import type { AnonymousEvent } from '../lib';
+import type { Event } from '../lib';
 import moment from 'moment';
 
 const props = defineProps<{
-	event: AnonymousEvent
+	event: Event
 }>()
 
 const dimensions = computed(() => {
@@ -24,6 +24,9 @@ const dimensions = computed(() => {
 </script>
 
 <template>
-	<div class="absolute w-11/12 rounded-lg h-0 top-20 bg-black opacity-45"
-		:style="{ top: `${dimensions.top}%`, height: `${dimensions.height}%` }"></div>
+	<div class="absolute w-11/12 rounded-lg h-0 top-20 bg-black opacity-45 p-2 flex flex-col"
+		:style="{ top: `${dimensions.top}%`, height: `${dimensions.height}%` }">
+		<div>{{ event.from.format('HH:mm') }} - {{ event.to.format('HH:mm') }}</div>
+		<div>{{ event.title }}</div>
+	</div>
 </template>

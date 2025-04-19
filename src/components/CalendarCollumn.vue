@@ -1,15 +1,16 @@
 <script setup lang="ts">
 import { computed, ref, useTemplateRef } from 'vue';
 import CalendarSeperator from './CalendarSeperator.vue';
-import type { AnonymousEvent, Seperator, Timespan } from '../lib';
+import type { Seperator, Timespan } from '../lib';
 import type { Moment } from 'moment';
 import CalendarEvent from './CalendarEvent.vue';
 import moment from 'moment';
+import type { Event } from '../lib';
 
 const props = defineProps<{
 	seperators: Seperator[],
 	day: Moment
-	events: AnonymousEvent[]
+	events: Event[]
 }>()
 
 const emit = defineEmits<{

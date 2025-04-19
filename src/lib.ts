@@ -10,6 +10,10 @@ export type Timespan = {
 	to: number
 }
 
+export type Event = AnonymousEvent & {
+	title: string
+}
+
 export type AnonymousEvent = {
 	from: Moment,
 	to: Moment
