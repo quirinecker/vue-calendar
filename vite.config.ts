@@ -5,5 +5,5 @@ import tailwindcss from '@tailwindcss/vite'
 // https://vite.dev/config/
 export default defineConfig({
 	plugins: [vue(), tailwindcss()],
-	base: 'quirinecker.github.io/vue-calendar/',
+	base: 'https://quirinecker.github.io/vue-calendar/',
 })
