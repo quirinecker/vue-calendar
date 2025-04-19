@@ -18,21 +18,21 @@ const emit = defineEmits<{
 }>()
 
 const isDragging = ref(false)
-const height = ref(0)
 const startY = ref(0)
+const endY = ref(0)
 const column = useTemplateRef('column')
 
+const height = computed(() => {
+	return Math.abs(endY.value - startY.value)
+})
+
 const top = computed(() => {
-	if (height.value > 0) {
-		return startY.value
-	} else {
-		return startY.value + height.value
-	}
+	return Math.min(startY.value, endY.value)
 })
 
 function dragStart(e: MouseEvent) {
-	height.value = 0
-	startY.value = offset(e.clientY)
+	startY.value = absoluteToRelativeY(e.clientY)
+	endY.value = absoluteToRelativeY(e.clientY)
 	isDragging.value = true
 }
 
@@ -41,10 +41,10 @@ function dragging(e: MouseEvent) {
 		return
 	}
 
-	height.value = offset(e.clientY) - startY.value
+	endY.value = absoluteToRelativeY(e.clientY)
 }
 
-function offset(n: number) {
+function absoluteToRelativeY(n: number) {
 	return n - (column.value?.getBoundingClientRect().top ?? 0)
 }
 
@@ -56,15 +56,15 @@ function dragStop(_: MouseEvent) {
 		return
 	}
 
-	const timeFrom = startY.value / column.value.offsetHeight
-	const timeTo = (startY.value + height.value) / column.value.offsetHeight
+	const timeFrom = Math.min(endY.value, startY.value) / column.value.offsetHeight
+	const timeTo = Math.max(endY.value, startY.value) / column.value.offsetHeight
 	emit('quick-create', moment(props.day), {
 		from: timeFrom,
 		to: timeTo
 	})
 
-	height.value = 0
 	startY.value = 0
+	endY.value = 0
 }
 </script>
 
@@ -81,7 +81,7 @@ function dragStop(_: MouseEvent) {
 				<hr class="w-full">
 			</CalendarSeperator>
 			<div class="absolute w-11/12 top-20 bg-black opacity-45 rounded-lg"
-				:style="{ height: `${Math.abs(height)}px`, top: `${top}px` }"></div>
+				:style="{ height: `${height}px`, top: `${top}px`, display: isDragging }"></div>
 
 			<div v-for="collissionGroup in events" class="flex flex-row w-11/12 h-full absolute top-0">
 				<CalendarEvent v-for="[index, event] in collissionGroup.entries()" :event="event" :collision_index="index" :collision_count="collissionGroup.length" />

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, ref, onMounted } from 'vue';
 import type { Seperator, Timespan, Event } from '../lib';
 import CalendarHeader from './CalendarHeader.vue';
 import CalendarCollumn from './CalendarCollumn.vue';
@@ -14,14 +14,19 @@ type Day = {
 	events: Event[][]
 }
 
+onMounted(() => {
+	console.log(window.navigator.language)
+})
+
 const week = computed(() => {
-	return moment(date.value).startOf('week')
+	console.log(moment(date.value).startOf('isoWeek').format('dddd'))
+	return moment(date.value).startOf('isoWeek')
 })
 
 const days = computed<Day[]>(() => {
 	return [1, 2, 3, 4, 5, 6, 7].map((i) => {
 		const filteredEvents = events.value.filter(
-			(event) => event.from >= week.value.day(i).startOf('day') && event.to <= week.value.day(i).endOf('day')
+			(event) => event.from >= moment(week.value).weekday(i).startOf('day') && event.to <= moment(week.value).weekday(i).endOf('day')
 		)
 
 		const sortedEvents = filteredEvents.sort((a, b) => a.from.valueOf() - b.from.valueOf())
@@ -43,7 +48,7 @@ const days = computed<Day[]>(() => {
 		}, [] as Event[][])
 
 		return {
-			date: moment(week.value.day(i)),
+			date: moment(week.value).weekday(i),
 			events: groupedByCollisionEvents
 		}
 	})
