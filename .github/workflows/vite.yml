@@ -21,7 +21,9 @@ permissions:
 jobs:
   # Build job
   build:
-    runs-on: oven/bun
+    runs-on: ubuntu-latest
+    container:
+        image: oven/bun:latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
