@@ -18,3 +18,9 @@ export type AnonymousEvent = {
 	from: Moment,
 	to: Moment
 }
+
+export type SerializableEvent = {
+	title: string,
+	from: string,
+	to: string
+}

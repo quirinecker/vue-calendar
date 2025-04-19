@@ -27,13 +27,8 @@ const days = computed<Day[]>(() => {
 	}))
 })
 
-watch(days, () => {
-	console.log("days", days.value)
-})
-
-
 const emits = defineEmits<{
-	(e: 'quick-create', timespan: Event): void
+	(e: 'create', timespan: Event): void
 }>()
 
 const seperators = ref<Seperator[]>([
@@ -47,8 +42,6 @@ const seperators = ref<Seperator[]>([
 ])
 
 function quickCreate(date: Moment, timespan: Timespan) {
-	console.log(`Event from ${timespan.from * 24 * 3600 * 1000} to ${timespan.to * 24 * 3600 * 1000} `)
-
 	const eventTitle = prompt("Event title")
 
 	if (eventTitle === null) {
@@ -61,7 +54,7 @@ function quickCreate(date: Moment, timespan: Timespan) {
 		to: moment(date).startOf('day').minutes(timespan.to * 24 * 60)
 	}
 
-	emits('quick-create', newEvent)
+	emits('create', newEvent)
 	events.value.push(newEvent)
 }
 

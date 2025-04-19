@@ -13,8 +13,6 @@ const dimensions = computed(() => {
 	const from_percentage = props.event.from.diff(start_of_day, 'minutes') / minutes_in_day
 	const to_percentage = props.event.to.diff(start_of_day, 'minutes') / minutes_in_day
 
-	console.log(from_percentage, to_percentage)
-
 	return {
 		top: Math.abs(from_percentage) * 100,
 		height: (to_percentage - from_percentage) * 100

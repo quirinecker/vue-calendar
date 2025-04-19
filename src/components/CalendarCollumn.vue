@@ -31,7 +31,6 @@ const top = computed(() => {
 })
 
 function dragStart(e: MouseEvent) {
-	console.log(e.target)
 	height.value = 0
 	startY.value = offset(e.clientY)
 	isDragging.value = true
