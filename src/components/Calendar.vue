@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, onMounted } from 'vue';
-import type { Seperator, Timespan, Event } from '../lib';
+import type { Seperator, Timespan, Event, EventWithCollisions } from '../lib';
 import CalendarHeader from './CalendarHeader.vue';
 import CalendarCollumn from './CalendarCollumn.vue';
 import moment, { type Moment } from 'moment';
@@ -11,7 +11,7 @@ const date = computed(() => moment(dateString.value))
 
 type Day = {
 	date: Moment
-	events: Event[][]
+	events: EventWithCollisions[][]
 }
 
 onMounted(() => {
@@ -23,6 +23,14 @@ const week = computed(() => {
 	return moment(date.value).startOf('isoWeek')
 })
 
+function pushEventWithCollisionUpdate(array: EventWithCollisions[], event: Event, collisions: EventWithCollisions[], collisionCount: number) {
+	array.push({...event, collisions: collisionCount})
+
+	for (let collision of collisions) {
+		collision.collisions = collisionCount
+	}
+}
+
 const days = computed<Day[]>(() => {
 	return [1, 2, 3, 4, 5, 6, 7].map((i) => {
 		const filteredEvents = events.value.filter(
@@ -31,25 +39,36 @@ const days = computed<Day[]>(() => {
 
 		const sortedEvents = filteredEvents.sort((a, b) => a.from.valueOf() - b.from.valueOf())
 
-		const groupedByCollisionEvents = sortedEvents.reduce((groups, event) => {
-			const group = groups.find((group) => {
-				const eventEnds = group.map(e => e.to.valueOf())
-				const maxEnd = Math.max(...eventEnds)
-				return event.from.valueOf() < maxEnd
-			})
+		const columns: EventWithCollisions[][] = [[]]
 
-			if (group) {
-				group.push(event)
-			} else {
-				groups.push([event])
+		for (let event of sortedEvents) {
+			let collisions: EventWithCollisions[] = []
+			for (let i = 0; i < columns.length; i++) {
+				const column = columns[i]
+				if (column.length === 0) {
+					pushEventWithCollisionUpdate(column, event, collisions, collisions.length)
+					break
+				}
+
+				if (event.from.valueOf() > column[column.length - 1].to.valueOf()) {
+					pushEventWithCollisionUpdate(column, event, collisions, collisions.length)
+					break
+				} else {
+					collisions.push(column[column.length - 1])
+				}
+
+				if (columns.length === i + 1) {
+					columns.push([])
+					pushEventWithCollisionUpdate(columns[i+1], event, collisions, collisions.length)
+					break
+				}
+
 			}
-
-			return groups
-		}, [] as Event[][])
+		}
 
 		return {
 			date: moment(week.value).weekday(i),
-			events: groupedByCollisionEvents
+			events: columns
 		}
 	})
 })

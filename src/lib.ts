@@ -24,3 +24,7 @@ export type SerializableEvent = {
 	from: string,
 	to: string
 }
+
+export type EventWithCollisions = Event & {
+	collisions: number
+}

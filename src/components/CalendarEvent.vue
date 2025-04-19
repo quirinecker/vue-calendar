@@ -1,12 +1,11 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import type { Event } from '../lib';
+import type { EventWithCollisions } from '../lib';
 import moment from 'moment';
 
 const props = defineProps<{
-	event: Event,
-	collision_index: number,
-	collision_count: number
+	event: EventWithCollisions
+	columnIndex: number
 }>()
 
 const dimensions = computed(() => {
@@ -22,13 +21,12 @@ const dimensions = computed(() => {
 })
 
 const left = computed(() => {
-	return props.collision_index / props.collision_count * 100
+	return (100 / (props.event.collisions + 1)) * props.columnIndex
 })
 
 const widht = computed(() => {
-	return (100 / props.collision_count)
+	return (100 / (props.event.collisions + 1))
 })
-
 
 </script>
 

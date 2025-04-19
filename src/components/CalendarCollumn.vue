@@ -1,16 +1,15 @@
 <script setup lang="ts">
 import { computed, ref, useTemplateRef } from 'vue';
 import CalendarSeperator from './CalendarSeperator.vue';
-import type { Seperator, Timespan } from '../lib';
+import type { EventWithCollisions, Seperator, Timespan } from '../lib';
 import type { Moment } from 'moment';
 import CalendarEvent from './CalendarEvent.vue';
 import moment from 'moment';
-import type { Event } from '../lib';
 
 const props = defineProps<{
 	seperators: Seperator[],
 	day: Moment
-	events: Event[][]
+	events: EventWithCollisions[][]
 }>()
 
 const emit = defineEmits<{
@@ -81,10 +80,10 @@ function dragStop(_: MouseEvent) {
 				<hr class="w-full">
 			</CalendarSeperator>
 			<div class="absolute w-11/12 top-20 bg-black opacity-45 rounded-lg"
-				:style="{ height: `${height}px`, top: `${top}px`, display: isDragging }"></div>
+				:style="{ height: `${height}px`, top: `${top}px` }"></div>
 
-			<div v-for="collissionGroup in events" class="flex flex-row w-11/12 h-full absolute top-0">
-				<CalendarEvent v-for="[index, event] in collissionGroup.entries()" :event="event" :collision_index="index" :collision_count="collissionGroup.length" />
+			<div v-for="[index, column] in events.entries()" class="flex flex-row w-11/12 h-full absolute top-0">
+				<CalendarEvent v-for="event in column" :event="event" :columnIndex="index" />
 			</div>
 		</div>
 	</div>
