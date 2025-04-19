@@ -11,7 +11,7 @@ const date = computed(() => moment(dateString.value))
 
 type Day = {
 	date: Moment
-	events: Event[]
+	events: Event[][]
 }
 
 const week = computed(() => {
@@ -19,12 +19,34 @@ const week = computed(() => {
 })
 
 const days = computed<Day[]>(() => {
-	return [1, 2, 3, 4, 5, 6, 0].map((i) => ({
-		date: moment(week.value.day(i)),
-		events: events.value.filter(
+	return [1, 2, 3, 4, 5, 6, 0].map((i) => {
+		const filteredEvents = events.value.filter(
 			(event) => event.from >= week.value.day(i).startOf('day') && event.to <= week.value.day(i).endOf('day')
 		)
-	}))
+
+		const sortedEvents = filteredEvents.sort((a, b) => a.from.valueOf() - b.from.valueOf())
+
+		const groupedByCollisionEvents = sortedEvents.reduce((groups, event) => {
+			const group = groups.find((group) => {
+				const eventEnds = group.map(e => e.to.valueOf())
+				const maxEnd = Math.max(...eventEnds)
+				return event.from.valueOf() < maxEnd
+			})
+
+			if (group) {
+				group.push(event)
+			} else {
+				groups.push([event])
+			}
+
+			return groups
+		}, [] as Event[][])
+
+		return {
+			date: moment(week.value.day(i)),
+			events: groupedByCollisionEvents
+		}
+	})
 })
 
 const emits = defineEmits<{

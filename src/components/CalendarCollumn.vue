@@ -10,7 +10,7 @@ import type { Event } from '../lib';
 const props = defineProps<{
 	seperators: Seperator[],
 	day: Moment
-	events: Event[]
+	events: Event[][]
 }>()
 
 const emit = defineEmits<{
@@ -83,7 +83,9 @@ function dragStop(_: MouseEvent) {
 			<div class="absolute w-11/12 top-20 bg-black opacity-45 rounded-lg"
 				:style="{ height: `${Math.abs(height)}px`, top: `${top}px` }"></div>
 
-			<CalendarEvent v-for="event in events" :event="event" />
+			<div v-for="collissionGroup in events" class="flex flex-row w-11/12 h-full absolute top-0">
+				<CalendarEvent v-for="[index, event] in collissionGroup.entries()" :event="event" :collision_index="index" :collision_count="collissionGroup.length" />
+			</div>
 		</div>
 	</div>
 </template>
