@@ -40,7 +40,8 @@ function clearCalendar() {
 <template>
 	<main class="flex justify-center items-center h-screen w-screen">
 		<div class="w-11/12 h-11/12 overflow-scroll">
-			<button class="bg-black rounded-lg text-white px-2 py-1 cursor-pointer" @click="clearCalendar">Clear Calendar</button>
+			<button class="bg-black rounded-lg text-white px-2 py-1 cursor-pointer" @click="clearCalendar">Clear
+				Calendar</button>
 			<Calendar v-model:events="events" />
 		</div>
 	</main>

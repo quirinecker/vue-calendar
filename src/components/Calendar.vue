@@ -19,7 +19,7 @@ const week = computed(() => {
 })
 
 const days = computed<Day[]>(() => {
-	return [1, 2, 3, 4, 5, 6, 0].map((i) => {
+	return [1, 2, 3, 4, 5, 6, 7].map((i) => {
 		const filteredEvents = events.value.filter(
 			(event) => event.from >= week.value.day(i).startOf('day') && event.to <= week.value.day(i).endOf('day')
 		)
