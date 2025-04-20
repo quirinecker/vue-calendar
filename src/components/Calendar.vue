@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { computed, ref, onMounted } from 'vue';
-import type { Seperator, Timespan, Event, EventWithCollisions } from '../lib';
+import { computed, ref } from 'vue';
+import type { Seperator, Timespan } from '../lib';
+import { Event, type CollissionWrapper, type DraggedEvent } from '../event';
 import CalendarHeader from './CalendarHeader.vue';
 import CalendarCollumn from './CalendarCollumn.vue';
 import moment, { type Moment } from 'moment';
@@ -8,23 +9,19 @@ import moment, { type Moment } from 'moment';
 const events = defineModel<Event[]>('events', { required: true })
 const dateString = ref(moment().format("YYYY-MM-DD"))
 const date = computed(() => moment(dateString.value))
+const draggedEvent = ref<DraggedEvent | undefined>()
 
 type Day = {
 	date: Moment
-	events: EventWithCollisions[][]
+	events: CollissionWrapper[][]
 }
 
-onMounted(() => {
-	console.log(window.navigator.language)
-})
-
 const week = computed(() => {
-	console.log(moment(date.value).startOf('isoWeek').format('dddd'))
 	return moment(date.value).startOf('isoWeek')
 })
 
-function pushEventWithCollisionUpdate(array: EventWithCollisions[], event: Event, collisions: EventWithCollisions[], collisionCount: number) {
-	array.push({...event, collisions: collisionCount})
+function pushEventWithCollisionUpdate(array: CollissionWrapper[], event: Event, collisions: CollissionWrapper[], collisionCount: number) {
+	array.push({event: event, collisions: collisionCount })
 
 	for (let collision of collisions) {
 		collision.collisions = collisionCount
@@ -39,10 +36,10 @@ const days = computed<Day[]>(() => {
 
 		const sortedEvents = filteredEvents.sort((a, b) => a.from.valueOf() - b.from.valueOf())
 
-		const columns: EventWithCollisions[][] = [[]]
+		const columns: CollissionWrapper[][] = [[]]
 
 		for (let event of sortedEvents) {
-			let collisions: EventWithCollisions[] = []
+			let collisions: CollissionWrapper[] = []
 			for (let i = 0; i < columns.length; i++) {
 				const column = columns[i]
 				if (column.length === 0) {
@@ -50,7 +47,7 @@ const days = computed<Day[]>(() => {
 					break
 				}
 
-				if (event.from.valueOf() > column[column.length - 1].to.valueOf()) {
+				if (event.from.valueOf() > column[column.length - 1].event.to.valueOf()) {
 					pushEventWithCollisionUpdate(column, event, collisions, collisions.length)
 					break
 				} else {
@@ -59,7 +56,7 @@ const days = computed<Day[]>(() => {
 
 				if (columns.length === i + 1) {
 					columns.push([])
-					pushEventWithCollisionUpdate(columns[i+1], event, collisions, collisions.length)
+					pushEventWithCollisionUpdate(columns[i + 1], event, collisions, collisions.length)
 					break
 				}
 
@@ -94,11 +91,11 @@ function quickCreate(date: Moment, timespan: Timespan) {
 		return
 	}
 
-	const newEvent: Event = {
-		title: eventTitle,
-		from: moment(date).startOf('day').minutes(timespan.from * 24 * 60),
-		to: moment(date).startOf('day').minutes(timespan.to * 24 * 60)
-	}
+	const newEvent: Event = new Event(
+		eventTitle,
+		moment(date).startOf('day').minutes(timespan.from * 24 * 60),
+		moment(date).startOf('day').minutes(timespan.to * 24 * 60)
+	)
 
 	emits('create', newEvent)
 	events.value.push(newEvent)
@@ -112,7 +109,7 @@ function quickCreate(date: Moment, timespan: Timespan) {
 		<div class="calendar flex flex-row w-full flex-1 items-stretch">
 			<CalendarHeader :seperators="seperators" />
 
-			<CalendarCollumn v-for="day in days" :seperators="seperators" :day="day.date" :events="day.events"
+			<CalendarCollumn v-for="day in days" :seperators="seperators" :day="day.date" :events="day.events" v-model:draggedEvent="draggedEvent"
 				@quick-create="quickCreate" />
 		</div>
 

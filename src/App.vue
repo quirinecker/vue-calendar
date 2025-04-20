@@ -1,32 +1,23 @@
 <script setup lang="ts">
 import { ref, onMounted, watch } from 'vue';
-import type { Event, SerializableEvent } from './lib';
+import { Event, type SerializableEvent } from './event';
 import Calendar from './components/Calendar.vue';
-import moment from 'moment';
 
 const events = ref<Event[]>([])
 
 watch(events, () => {
-	const serializableEvents: SerializableEvent[] = events.value.map((event) => ({
-		title: event.title,
-		from: event.from.toISOString(),
-		to: event.to.toISOString()
-	}))
-
-	console.log("events", serializableEvents, events.value)
-
+	const serializableEvents: SerializableEvent[] = events.value.map((event) => event.toSerializable())
 	localStorage.setItem('events', JSON.stringify(serializableEvents))
-
 }, { deep: true })
 
 onMounted(() => {
 	const storedEvents = localStorage.getItem('events')
 	if (storedEvents) {
 		const serializableEvents = JSON.parse(storedEvents) as SerializableEvent[]
-		events.value = serializableEvents.map((event) => ({
+		events.value = serializableEvents.map((event) => Event.fromSerializable({
 			title: event.title,
-			from: moment(event.from),
-			to: moment(event.to)
+			from: event.from,
+			to: event.to
 		}))
 	}
 })

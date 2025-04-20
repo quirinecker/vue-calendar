@@ -1,27 +1,19 @@
 <script setup lang="ts">
-import { computed } from 'vue';
-import type { EventDimensions, EventWithCollisions, Event } from '../lib';
-import moment from 'moment';
-
+import { computed, ref } from 'vue';
+import type { CollissionWrapper, EventDimensions, Event } from '../event';
 const props = defineProps<{
-	event: EventWithCollisions
+	event: CollissionWrapper
 	columnIndex: number
 }>()
 
 const emit = defineEmits<{
-	(e: 'move', event: Event, dimensions: EventDimensions): void,
+	(e: 'move', mouseEvent: MouseEvent, event: Event): void,
 }>()
 
-const dimensions = computed<EventDimensions>(() => {
-	const start_of_day = moment(props.event.from).startOf('day')
-	const minutes_in_day = 24 * 60
-	const from_percentage = props.event.from.diff(start_of_day, 'minutes') / minutes_in_day
-	const to_percentage = props.event.to.diff(start_of_day, 'minutes') / minutes_in_day
+const visible = ref(true)
 
-	return {
-		from: Math.min(from_percentage, to_percentage) * 100,
-		to: Math.max(from_percentage, to_percentage) * 100
-	}
+const dimensions = computed<EventDimensions>(() => {
+	return props.event.event.getPercentDimensions()
 })
 
 const left = computed(() => {
@@ -40,17 +32,19 @@ const top = computed(() => {
 	return Math.min(dimensions.value.from, dimensions.value.to)
 })
 
-function dragStart(_: DragEvent) {
-	emit('move', props.event as Event, dimensions.value)
+function dragStart(e: DragEvent) {
+	console.log("start drag")
+	emit('move', e, props.event.event)
+	visible.value = false
 }
 
 </script>
 
 <template>
-	<div class="absolute rounded-lg h-0 top-20 bg-black opacity-45 p-2 flex flex-col" @mousedown.stop @mouseover.stop
-		@mouseup.stop draggable="true" @dragstart="dragStart"
+	<div class="absolute rounded-lg h-0 top-20 bg-black opacity-45 p-2 flex flex-col z-10" @mousedown.stop
+		@mouseover.stop @mouseup.stop draggable="true" @dragstart="dragStart"
 		:style="{ top: `${top}%`, height: `${height}%`, left: `${left}%`, width: `${widht}%` }">
-		<div>{{ event.from.format('HH:mm') }} - {{ event.to.format('HH:mm') }}</div>
-		<div>{{ event.title }}</div>
+		<div>{{ event.event.from.format('HH:mm') }} - {{ event.event.to.format('HH:mm') }}</div>
+		<div>{{ event.event.title }}</div>
 	</div>
 </template>
