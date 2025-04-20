@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, useTemplateRef } from 'vue';
 import CalendarSeperator from './CalendarSeperator.vue';
-import type { EventWithCollisions, Seperator, Timespan } from '../lib';
+import { percentToPixelDimensions, type EventDimensions, type EventWithCollisions, type Seperator, type Timespan, type Event } from '../lib';
 import type { Moment } from 'moment';
 import CalendarEvent from './CalendarEvent.vue';
 import moment from 'moment';
@@ -20,6 +20,8 @@ const isDragging = ref(false)
 const startY = ref(0)
 const endY = ref(0)
 const column = useTemplateRef('column')
+const draggedEvent = ref<EventDimensions | undefined>()
+const draggedEventHeight = ref<number | undefined>()
 
 const height = computed(() => {
 	return Math.abs(endY.value - startY.value)
@@ -29,13 +31,13 @@ const top = computed(() => {
 	return Math.min(startY.value, endY.value)
 })
 
-function dragStart(e: MouseEvent) {
+function mousedown(e: MouseEvent) {
 	startY.value = absoluteToRelativeY(e.clientY)
 	endY.value = absoluteToRelativeY(e.clientY)
 	isDragging.value = true
 }
 
-function dragging(e: MouseEvent) {
+function mouseover(e: MouseEvent) {
 	if (!isDragging.value) {
 		return
 	}
@@ -47,7 +49,7 @@ function absoluteToRelativeY(n: number) {
 	return n - (column.value?.getBoundingClientRect().top ?? 0)
 }
 
-function dragStop(_: MouseEvent) {
+function mouseup(_: MouseEvent) {
 	isDragging.value = false
 
 	if (column.value === null) {
@@ -65,17 +67,43 @@ function dragStop(_: MouseEvent) {
 	startY.value = 0
 	endY.value = 0
 }
+
+function dragover(e: DragEvent) {
+	if (draggedEvent.value === undefined) {
+		return
+	}
+
+	draggedEvent.value.from = absoluteToRelativeY(e.clientY)
+}
+
+function dragleave(_: DragEvent) {
+	// draggedEvent.value = undefined
+}
+
+const draggedEventTop = computed(() => {
+	return draggedEvent.value?.from ?? 0
+})
+
+function eventMove(_: Event, dimensions: EventDimensions) {
+	const pixelDimensions = percentToPixelDimensions(dimensions, column.value?.offsetHeight ?? 0)
+	pixelDimensions.from = absoluteToRelativeY(pixelDimensions.from)
+	pixelDimensions.to = absoluteToRelativeY(pixelDimensions.to)
+	draggedEvent.value = pixelDimensions
+	draggedEventHeight.value = Math.abs(pixelDimensions.to - pixelDimensions.from)
+	console.log(pixelDimensions)
+}
+
 </script>
 
 <template>
-	<div class="flex flex-col h-full grow">
+	<div class="flex flex-col h-full grow" @dragleave="dragleave">
 		<div class="flex justify-center items-center flex-col bg-gray-600 h-18 text-white border-b-2 border-white">
 			<div>{{ props.day.format('dd').toUpperCase() }}</div>
 			<div>{{ props.day.date() }}</div>
 		</div>
 
-		<div ref="column" @mousedown="dragStart" @mouseup="dragStop" @mousemove="dragging"
-			class="bg-gray-600 text-white relative flex flex-col grow items-center">
+		<div id="col" ref="column" @mousedown="mousedown" @mouseup="mouseup" @mousemove="mouseover" @dragover="dragover"
+			@dragleave="dragleave" class="bg-gray-600 text-white relative flex flex-col grow items-center">
 			<CalendarSeperator v-for="sep in seperators" :seperator="sep">
 				<hr class="w-full">
 			</CalendarSeperator>
@@ -83,8 +111,11 @@ function dragStop(_: MouseEvent) {
 				:style="{ height: `${height}px`, top: `${top}px` }"></div>
 
 			<div v-for="[index, column] in events.entries()" class="flex flex-row w-11/12 h-full absolute top-0">
-				<CalendarEvent v-for="event in column" :event="event" :columnIndex="index" />
+				<CalendarEvent v-for="event in column" :event="event" :columnIndex="index" @move="eventMove" />
 			</div>
+
+			<div class="absolute w-11/12 top-20 bg-black opacity-45 rounded-lg"
+				:style="{ height: `${draggedEventHeight}px`, top: `${draggedEventTop}px` }"></div>
 		</div>
 	</div>
 </template>

@@ -28,3 +28,15 @@ export type SerializableEvent = {
 export type EventWithCollisions = Event & {
 	collisions: number
 }
+
+export type EventDimensions = {
+	from: number,
+	to: number
+}
+
+export function percentToPixelDimensions(dimensions: EventDimensions, totalHeight: number): EventDimensions {
+	return {
+		from: (dimensions.from / 100) * totalHeight,
+		to: (dimensions.to / 100) * totalHeight
+	}
+}
